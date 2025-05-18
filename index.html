@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisis Saham & Crypto</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#00e6ff',secondary:'#00ff9d'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #121212;
+color: #e0e0e0;
+}
+.neon-text {
+text-shadow: 0 0 5px rgba(0, 230, 255, 0.5), 0 0 10px rgba(0, 230, 255, 0.3);
+}
+.neon-border {
+box-shadow: 0 0 5px rgba(0, 230, 255, 0.5), 0 0 10px rgba(0, 230, 255, 0.3);
+}
+.gradient-bg {
+background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+}
+.card {
+background-color: #1e1e1e;
+border: 1px solid #333;
+transition: all 0.3s ease;
+}
+.card:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+filter: invert(1);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+.page-transition {
+animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+.tab-active {
+color: var(--tw-color-primary-DEFAULT);
+border-bottom: 2px solid var(--tw-color-primary-DEFAULT);
+}
+.custom-scrollbar::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+background: #1e1e1e;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+background: #333;
+border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+background: #444;
+}
+.toggle-switch {
+position: relative;
+display: inline-block;
+width: 40px;
+height: 20px;
+}
+.toggle-switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.toggle-slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #333;
+transition: .4s;
+border-radius: 20px;
+}
+.toggle-slider:before {
+position: absolute;
+content: "";
+height: 16px;
+width: 16px;
+left: 2px;
+bottom: 2px;
+background-color: #fff;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .toggle-slider {
+background-color: var(--tw-color-primary-DEFAULT);
+}
+input:checked + .toggle-slider:before {
+transform: translateX(20px);
+}
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#121212] border-b border-gray-800">
+<div class="container mx-auto px-4 py-3">
+<div class="flex justify-between items-center">
+<a href="#" class="text-2xl font-['Pacifico'] text-primary">ChartHunterID</a>
+<div class="hidden md:flex space-x-6 items-center">
+<a href="#" class="text-white hover:text-primary transition-colors py-2 border-b-2 border-primary">Beranda</a>
+<a href="#" id="saham-menu" class="text-gray-400 hover:text-primary transition-colors py-2 border-b-2 border-transparent">Saham</a>
+<a href="TESTING 2\Halaman-Analisis-Cryptocurrency.html" class="text-gray-400 hover:text-primary transition-colors py-2 border-b-2 border-transparent">Crypto</a>
+<a href="#" class="text-gray-400 hover:text-primary transition-colors py-2 border-b-2 border-transparent">Tentang Saya</a>
+<a href="#" class="text-gray-400 hover:text-primary transition-colors py-2 border-b-2 border-transparent">Kontak</a>
+</div>
+<div class="md:hidden w-8 h-8 flex items-center justify-center">
+<i class="ri-menu-line ri-lg text-white"></i>
+</div>
+</div>
+</div>
+</nav>
+<div class="container mx-auto px-4 pt-20 pb-10">
+<div class="page-transition">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">Analisis Saham</h1>
+    <p class="text-gray-400">Analisis dan prediksi saham dengan dukungan AI</p>
+  </div>
+
+  <div id="saham-section" style="display: none;">
+    <!-- Form input -->
+    <form id="stockForm" class="card p-5 rounded mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <i class="ri-search-line text-gray-500"></i>
+      </div>
+      <input type="text" id="kodeSaham" class="w-full bg-[#252525] text-white border-none rounded pl-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Kode Saham (BBCA, TLKM, ...)">
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="relative">
+        <input type="date" id="tanggalAwal" class="w-full bg-[#252525] text-white border-none rounded pl-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary">
+      </div>
+      <div class="relative">
+        <input type="date" id="tanggalAkhir" class="w-full bg-[#252525] text-white border-none rounded pl-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary">
+      </div>
+    </div>
+    <button type="submit" class="!rounded-button bg-primary hover:bg-opacity-80 text-black font-medium py-2.5 px-4 transition-colors whitespace-nowrap">
+      <div class="flex items-center justify-center gap-2">
+        <i class="ri-line-chart-line"></i>
+        <span>Analisis Saham</span>
+      </div>
+    </button>
+  </div>
+</form>
+
+
+    <!-- Grafik saham -->
+    <div class="card p-5 rounded mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Grafik Harga Saham</h2>
+        <div class="flex space-x-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-400">MA</span>
+            <label class="toggle-switch">
+              <input type="checkbox">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-400">RSI</span>
+            <label class="toggle-switch">
+              <input type="checkbox">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-400">MACD</span>
+            <label class="toggle-switch">
+              <input type="checkbox">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Tempat chart -->
+    <div id="stockChart" class="w-full h-[400px]"></div>
+    </div>
+
+    
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  <div class="card p-5 rounded">
+    <h2 class="text-xl font-semibold mb-4 flex items-center">
+      <div class="w-6 h-6 flex items-center justify-center mr-2 text-primary">
+        <i class="ri-ai-generate ri-lg"></i>
+      </div>
+      Prediksi AI
+    </h2>
+    <div class="bg-[#252525] rounded p-6 flex flex-col items-center justify-center h-[200px]">
+      <div class="w-12 h-12 flex items-center justify-center mb-4">
+        <i class="ri-robot-line ri-2x text-primary"></i>
+      </div>
+      <p class="text-center text-gray-400">Masukkan kode saham dan rentang tanggal untuk melihat prediksi AI</p>
+    </div>
+  </div>
+
+  <div class="card p-5 rounded">
+    <h2 class="text-xl font-semibold mb-4 flex items-center">
+      <div class="w-6 h-6 flex items-center justify-center mr-2 text-primary">
+        <i class="ri-line-chart-line ri-lg"></i>
+      </div>
+      Analisis Teknikal
+    </h2>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MA (20)</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MA (50)</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">RSI</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MACD</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  <div class="card p-5 rounded">
+    <h2 class="text-xl font-semibold mb-4 flex items-center">
+      <div class="w-6 h-6 flex items-center justify-center mr-2 text-primary">
+        <i class="ri-ai-generate ri-lg"></i>
+      </div>
+      Prediksi AI
+    </h2>
+    <div class="bg-[#252525] rounded p-6 flex flex-col items-center justify-center h-[200px]">
+      <div class="w-12 h-12 flex items-center justify-center mb-4">
+        <i class="ri-robot-line ri-2x text-primary"></i>
+      </div>
+      <p class="text-center text-gray-400">Masukkan kode saham dan rentang tanggal untuk melihat prediksi AI</p>
+    </div>
+  </div>
+
+  <div class="card p-5 rounded">
+    <h2 class="text-xl font-semibold mb-4 flex items-center">
+      <div class="w-6 h-6 flex items-center justify-center mr-2 text-primary">
+        <i class="ri-line-chart-line ri-lg"></i>
+      </div>
+      Analisis Teknikal
+    </h2>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MA (20)</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MA (50)</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">RSI</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#252525] rounded p-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-400">MACD</span>
+          <span class="text-lg font-medium">-</span>
+        </div>
+        <div class="w-full h-1 bg-[#333] rounded-full">
+          <div class="h-1 bg-primary rounded-full w-0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Handle window resize
+window.addEventListener('resize', function () {
+  const chart = echarts.getInstanceByDom(document.getElementById('stockChart'));
+  if (chart) chart.resize();
+});
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const sahamMenu = document.getElementById('saham-menu');
+  const sahamSection = document.getElementById('saham-section');
+
+  // Awalnya sembunyikan
+  sahamSection.style.display = 'none';
+
+  sahamMenu.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // Tampilkan
+    sahamSection.style.display = 'block';
+
+    // Hitung posisi scroll agar tidak ketutup navbar
+    const navbar = document.querySelector('nav');
+    const navbarHeight = navbar ? navbar.offsetHeight : 80;
+
+    const y = sahamSection.getBoundingClientRect().top + window.scrollY - navbarHeight;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const sahamMenu = document.getElementById('saham-menu');
+  const sahamSection = document.getElementById('saham-section');
+
+  // Sembunyikan awal
+  sahamSection.style.display = 'none';
+
+  // Saat tombol "Saham" diklik
+  sahamMenu.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // Tampilkan form
+    sahamSection.style.display = 'block';
+
+    // Scroll ke bawah
+    const navbar = document.querySelector('nav');
+    const navbarHeight = navbar ? navbar.offsetHeight : 80;
+    const y = sahamSection.getBoundingClientRect().top + window.scrollY - navbarHeight;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  });
+
+  // Saat form dikirim
+  document.getElementById('stockForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const kode = document.getElementById('kodeSaham').value;
+    const tglAwal = document.getElementById('tanggalAwal').value;
+    const tglAkhir = document.getElementById('tanggalAkhir').value;
+
+    fetch('/api/saham', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kode, tanggal_awal: tglAwal, tanggal_akhir: tglAkhir })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert("Error: " + data.error);
+        return;
+      }
+
+      const chart = echarts.init(document.getElementById('stockChart'));
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: data.tanggal },
+        yAxis: { type: 'value' },
+        series: [{
+          name: kode,
+          type: 'line',
+          data: data.harga,
+          smooth: true,
+          lineStyle: { color: '#00e6ff', width: 3 },
+          areaStyle: { color: 'rgba(0,230,255,0.2)' }
+        }]
+      });
+    });
+  });
+});
+fetch('/api/saham', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ kode, tanggal_awal: tglAwal, tanggal_akhir: tglAkhir })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.error) {
+    alert("Error: " + data.error);
+    return;
+  }
+
+  const chart = echarts.init(document.getElementById('stockChart'));
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: data.tanggal },
+    yAxis: { type: 'value' },
+    series: [{
+      name: kode,
+      type: 'line',
+      data: data.harga,
+      smooth: true,
+      lineStyle: { color: '#00e6ff', width: 3 },
+      areaStyle: { color: 'rgba(0,230,255,0.2)' }
+    }]
+  });
+})
+.catch(error => {
+  console.error("Fetch error:", error);
+  alert("Terjadi kesalahan saat mengambil data saham.");
+});
+chart.setOption({
+  backgroundColor: '#121212',       // latar belakang chart
+  textStyle: { color: '#e0e0e0' },   // warna teks umum
+  xAxis: {
+    type: 'category',
+    axisLine: { lineStyle: { color: '#e0e0e0' } },   // warna garis sumbu X
+    axisLabel: { color: '#e0e0e0' }                  // warna label sumbu X
+  },
+  yAxis: {
+    type: 'value',
+    axisLine: { lineStyle: { color: '#e0e0e0' } },   // warna garis sumbu Y
+    axisLabel: { color: '#e0e0e0' }                  // warna label sumbu Y
+  },
+  series: [{
+    name: kode,
+    type: 'line',
+    data: data.harga,
+    smooth: true,
+    lineStyle: { color: '#00e6ff', width: 3 },       // warna garis chart
+    areaStyle: { color: 'rgba(0,230,255,0.2)' }      // area fill di bawah garis
+  }]
+});
+
+</script>
+</body>
+</html>
